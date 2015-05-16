@@ -6,6 +6,7 @@
 #include "BFS.h"
 #include "BitArray2D.h"
 #include <cmath>
+#include "adam.h"
 
 
 BitArray2D<16, 16> goals;
@@ -15,7 +16,7 @@ IntervalTimer sensorTimer;
 
 void sensorLoop();
 
-Gps position = {currentCell, Direction::jpos};
+Gps position = {{0, 0}, Direction::jpos};
 
 
 void setup()
@@ -37,8 +38,14 @@ void setup()
     sensorTimer.priority(160);
 
     maze.setCellWalls(0, 0, {true, false, true, true});
+    
+    rightMotor = 1.f;
+    leftMotor = 0.8f;
 
-    delay(5000);
+    delay(7000);
+    
+    rightMotor = 0.f;
+    leftMotor = 0.f;
 }
 
 
@@ -50,32 +57,26 @@ void loop()
     goals.set(8, 8, true);
     goals.set(7, 8, true);
     
-    while (!goals.get(currentCell.i, currentCell.j))
+    while (!goals.get(position.current.i, position.current.j))
     {
-        bfs(maze, currentCell, goals, bfsPath);
+        bfs(maze, position.current, goals, bfsPath);
         if (bfsPath.size() > 0)
         {
             bfsPath.pop();
-            targetCell = bfsPath.pop();
-            while (currentCell != targetCell)
-            {
-                position = drive2(position, targetCell);
-                currentCell = position.current;
-            }
+            position = drive2cell(position, bfsPath.pop());
         }
     }
     
     goals.setAll(false);
     goals.set(0, 0, true);
 
-    while (!goals.get(currentCell.i, currentCell.j))
+    while (!goals.get(position.current.i, position.current.j))
     {
-        bfs(maze, currentCell, goals, bfsPath);
+        bfs(maze, position.current, goals, bfsPath);
         if (bfsPath.size() > 0)
         {
             bfsPath.pop();
-            targetCell = bfsPath.pop();
-            // go to target cell
+            position = drive2cell(position, bfsPath.pop());
         }
     }
 
@@ -126,11 +127,4 @@ void sensorLoop()
         --lholdoff;
     else
         dldt.push(dldtnew);
-
-    switch1.update();
-    switch2.update();
-    button1.update();
-    button2.update();
-
-    abortFlag = button1.pressed();
 }
