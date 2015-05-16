@@ -34,6 +34,8 @@ float circleDist(float a, float b);
 float stateDist(State s, State t);
 float limit(float x, float lim);
 
+Gps position = {currentCell, Direction::jpos};
+
 
 void setup()
 {
@@ -87,9 +89,12 @@ void loop()
         {
             bfsPath.pop();
             targetCell = bfsPath.pop();
-            while (currentCell != targetCell) YIELD;
+            while (currentCell != targetCell)
+            {
+                position = drive2(position, targetCell);
+                currentCell = position.current;
+            }
         }
-        YIELD;
     }
 
     float tempMaxSpeed = maxSpeed;
