@@ -12,6 +12,59 @@ enum class Movement
 };
 
 
+void Drive(float angle, float speedd)
+  {
+    //positive angle turns clockwise
+    rightMotor = (speedd + angle);
+    leftMotor = (speedd - angle);
+  }
+  
+void forward()
+{   //tweakable values
+    const float threshhold = 0.15f;
+    const float offsetR = 0.08f;
+    const float offsetL = 0.08f;
+    const float offsetF = 0.05f;
+    const float drivespeed = 0.8f;
+    const float motordifference = 0.05f;
+    const int drivetime = 2500;
+    const float pterm = 10.f;
+    //forward!
+    int lastTime = millis();
+  while(millis()-lastTime<drivetime) //1100
+  {//wall on each side
+      //stop if about to run into a wall
+    if (frontSensor.getDistance()  < offsetF)
+    {
+      rightMotor = 0;
+      leftMotor = 0;
+    }  
+    else if(leftSensor.getDistance() < threshhold && rightSensor.getDistance() < threshhold)
+    {
+        rightMotor = pterm*(leftSensor.getDistance()-rightSensor.getDistance())+drivespeed;
+        leftMotor = pterm*(rightSensor.getDistance()-leftSensor.getDistance())+drivespeed-motordifference;
+    }
+    else if(leftSensor.getDistance() < threshhold)        
+    {
+        rightMotor = pterm*(leftSensor.getDistance()-offsetL)+drivespeed;
+        leftMotor = pterm*(offsetL-leftSensor.getDistance())+drivespeed-motordifference;
+    }
+    else if(rightSensor.getDistance() < threshhold)
+    {
+        rightMotor = pterm*(offsetR-rightSensor.getDistance())+drivespeed;
+        leftMotor = pterm*(rightSensor.getDistance()-offsetR)+drivespeed-motordifference;
+    }
+    else 
+    {
+        rightMotor = drivespeed;
+        leftMotor = drivespeed-motordifference;
+    }
+  }
+}
+
+
+
+
 Movement pos2move(Gps position, Node target)
 {
     int i = target.i - position.current.i;
@@ -60,6 +113,37 @@ Movement pos2move(Gps position, Node target)
     return Movement::forward;
 }
 
+void updateMaze(Gps position)
+{
+    bool l = false;
+    bool r = false;
+    bool f = false;
+    bool b = false;
+    bool temp;
+    if(leftSensor.getDistance() < 0.15f)
+    {
+        l = true;
+    }
+    if(rightSensor.getDistance() < 0.15f)
+    {
+        r = true;
+    }
+    if(frontSensor.getDistance() < 0.15f)
+    {
+        f = true;
+    }
+    Direction dir = position.heading;
+    while(dir != Direction::jpos)
+    {
+        ++dir;
+        temp = f;
+        f = l;
+        l = b;
+        b = r;
+        r = temp;
+    }
+    maze.setCellWalls(position.current.i, position.current.j, {r, f, l, b});
+}
 
 Gps drive2cell(Gps position, Node target)
 {
@@ -68,36 +152,42 @@ Gps drive2cell(Gps position, Node target)
     switch (move)
     {
     case Movement::forward:
-        rightMotor = 0.882813f;
-        leftMotor = 0.664063f;
-        delay(2391);
+        forward();
         rightMotor = 0.f;
         leftMotor = 0.f;
+        delay(250);
         position.current = target;
         break;
+
     case Movement::backward:
-        rightMotor = 0.882813f;
-        leftMotor = -0.664063f;
-        delay(1024);
+        rightMotor = 1.f;
+        leftMotor = -0.95f;
+        delay(750);
         ++(++position.heading);
         rightMotor = 0.f;
         leftMotor = 0.f;
+        delay(250);
+        drive2cell(position, target);
         break;
     case Movement::left:
-        rightMotor = 0.882813f;
-        leftMotor = -0.664063f;
-        delay(512);
-        ++position.heading;
-        rightMotor = 0.f;
-        leftMotor = 0.f;
-        break;
-    case Movement::right:
-        rightMotor = -0.882813f;
-        leftMotor = 0.664063f;
-        delay(512);
+        rightMotor = 1.f;
+        leftMotor = -0.95f;
+        delay(300);
         --position.heading;
         rightMotor = 0.f;
         leftMotor = 0.f;
+        delay(250);
+        drive2cell(position, target);
+        break;
+    case Movement::right:
+        rightMotor = -1.f;
+        leftMotor = 0.95f;
+        delay(300);
+        ++position.heading;
+        rightMotor = 0.f;
+        leftMotor = 0.f;
+        delay(250);
+        drive2cell(position, target);
         break;
     }
 
@@ -145,3 +235,5 @@ bool Direction::operator!=(const Direction& other) const
 {
     return !(*this == other);
 }
+
+

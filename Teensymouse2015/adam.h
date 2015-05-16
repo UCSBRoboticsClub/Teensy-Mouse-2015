@@ -32,4 +32,6 @@ struct Gps
 
 Gps drive2cell(Gps position, Node target);
 
+void updateMaze(Gps);
+
 #endif
