@@ -51,11 +51,16 @@ void forward()
         if (control < -maxControl)
             control = -maxControl;
 
-        if (millis() - lastTime > 700 && millis() - lastTime < 1600)
+        if (millis() - lastTime > 600 && millis() - lastTime < 1800)
+        {
+            led(1);
             control = 0.f;
+        }
+        else
+            led(0);
 
         rightMotor = 0.9f + control;
-        leftMotor = 0.865f - control;
+        leftMotor = 0.8625f - control;
     }
 
     while (frontSensor.getDistance() < 0.1f &&
@@ -161,7 +166,7 @@ Gps drive2cell(Gps position, Node target)
     case Movement::backward:
         rightMotor = 1.f;
         leftMotor = -0.95f;
-        delay(580);
+        delay(620);
         ++(++position.heading);
         stop();
         position =  drive2cell(position, target);
@@ -169,7 +174,7 @@ Gps drive2cell(Gps position, Node target)
     case Movement::left:
         rightMotor = 1.f;
         leftMotor = -0.95f;
-        delay(300);
+        delay(320);
         ++position.heading;
         stop();
         position = drive2cell(position, target);
@@ -177,7 +182,7 @@ Gps drive2cell(Gps position, Node target)
     case Movement::right:
         rightMotor = -1.f;
         leftMotor = 0.95f;
-        delay(300);
+        delay(320);
         --position.heading;
         stop();
         position = drive2cell(position, target);
