@@ -22,10 +22,10 @@ void stop()
   
 void forward()
 {   //tweakable values
-    const float threshold = 0.14f;
+    const float threshold = 0.12f;
     const float sideOffset = (cellw - sensw)/2.f;
     const float frontOffset = cellw/2.f - fsensoff;
-    const int drivetime = 2400;
+    const int drivetime = 2480;
     const int lastTime = millis();
 
     const float kp = 1.f;
@@ -51,7 +51,7 @@ void forward()
         if (control < -maxControl)
             control = -maxControl;
 
-        if (millis() - lastTime > 600 && millis() - lastTime < 1800)
+        if (millis() - lastTime > 550 && millis() - lastTime < 1750)
         {
             led(1);
             control = 0.f;
@@ -166,7 +166,7 @@ Gps drive2cell(Gps position, Node target)
     case Movement::backward:
         rightMotor = 1.f;
         leftMotor = -0.95f;
-        delay(620);
+        delay(625);
         ++(++position.heading);
         stop();
         position =  drive2cell(position, target);
@@ -174,7 +174,7 @@ Gps drive2cell(Gps position, Node target)
     case Movement::left:
         rightMotor = 1.f;
         leftMotor = -0.95f;
-        delay(320);
+        delay(312);
         ++position.heading;
         stop();
         position = drive2cell(position, target);
