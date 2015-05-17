@@ -25,10 +25,10 @@ void forward()
     const float threshold = 0.14f;
     const float sideOffset = (cellw - sensw)/2.f;
     const float frontOffset = cellw/2.f - fsensoff;
-    const int drivetime = 2500;
+    const int drivetime = 2400;
     const int lastTime = millis();
 
-    const float kp = 2.f;
+    const float kp = 1.f;
     const float kd = 3.f;
     const float maxControl = 0.1f;
 
@@ -164,7 +164,7 @@ Gps drive2cell(Gps position, Node target)
         delay(580);
         ++(++position.heading);
         stop();
-        drive2cell(position, target);
+        position =  drive2cell(position, target);
         break;
     case Movement::left:
         rightMotor = 1.f;
@@ -172,7 +172,7 @@ Gps drive2cell(Gps position, Node target)
         delay(300);
         ++position.heading;
         stop();
-        drive2cell(position, target);
+        position = drive2cell(position, target);
         break;
     case Movement::right:
         rightMotor = -1.f;
@@ -180,7 +180,7 @@ Gps drive2cell(Gps position, Node target)
         delay(300);
         --position.heading;
         stop();
-        drive2cell(position, target);
+        position = drive2cell(position, target);
         break;
     }
 
