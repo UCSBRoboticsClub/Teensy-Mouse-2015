@@ -32,13 +32,10 @@ void forward()
     const float kd = 3.f;
     const float maxControl = 0.1f;
 
-    float rdist, ldist, fdist;
-
     while (millis() - lastTime < drivetime)
     {
-        rdist = rightSensor.getDistance();
-        ldist = leftSensor.getDistance();
-        fdist = frontSensor.getDistance();
+        const float rdist = rightSensor.getDistance();
+        const float ldist = leftSensor.getDistance();
 
         float control = 0.f;
 
@@ -60,41 +57,22 @@ void forward()
         rightMotor = 0.9f + control;
         leftMotor = 0.865f - control;
     }
-/*   fdist = frontSensor.getDistance();
 
-    while(fdist<0.1 &&(fdist < frontOffset-.01f|| fdist > frontOffset +.01f))
+    while (frontSensor.getDistance() < 0.1f &&
+           (frontSensor.getDistance() < frontOffset - 0.01f ||
+            frontSensor.getDistance() > frontOffset + 0.01f))
     {
-        rdist = rightSensor.getDistance();
-        ldist = leftSensor.getDistance();
-        fdist = frontSensor.getDistance();
-        
-        float control = 0.f;
-        if (fdist > frontOffset-.01)
+        if (frontSensor.getDistance() < frontOffset)
         {
-            if (rdist < threshold)
-                control -= kp * (rdist - sideOffset) + kd * drdt;
-
-            if (ldist < threshold)
-                control += kp * (ldist - sideOffset) + kd * dldt;
+            rightMotor = -0.9f;
+            leftMotor = -0.865f;
         }
         else
         {
-            if (rdist < threshold)
-                control += kp * (rdist - sideOffset) + kd * drdt;
-
-            if (ldist < threshold)
-                control -= kp * (ldist - sideOffset) + kd * dldt;
+            rightMotor = 0.9f;
+            leftMotor = 0.865f;
         }
-        if (control > maxControl)
-            control = maxControl;
-        
-        if (control < -maxControl)
-            control = -maxControl;
-           
-        rightMotor = 0.9f + control;
-        leftMotor = 0.87f - control;
-        
-        }*/
+    }
 }
 
 
