@@ -38,9 +38,6 @@ void setup()
     sensorTimer.priority(160);
 
     maze.setCellWalls(0, 0, {true, false, true, true});
-    
-    rightMotor = 1.f;
-    leftMotor = 0.8f;
 
     delay(7000);
     
