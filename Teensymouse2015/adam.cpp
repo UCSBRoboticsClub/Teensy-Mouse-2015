@@ -39,10 +39,10 @@ void forward()
 
         float control = 0.f;
 
-        if (rdist < threshold)
+        if (rdist < threshold && rholdoff <= 0)
             control -= kp * (rdist - sideOffset) + kd * drdt;
 
-        if (ldist < threshold)
+        if (ldist < threshold && lholdoff <= 0)
             control += kp * (ldist - sideOffset) + kd * dldt;
 
         if (control > maxControl)

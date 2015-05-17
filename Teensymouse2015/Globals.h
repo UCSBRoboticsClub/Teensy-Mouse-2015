@@ -38,6 +38,10 @@ extern LowPass dfdt;
 extern LowPass dldt;
 extern Maze<16, 16> maze;
 
+extern int rholdoff;
+extern int fholdoff;
+extern int lholdoff;
+
 void led(bool on);
 
 

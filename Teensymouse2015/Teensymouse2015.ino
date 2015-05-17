@@ -94,10 +94,6 @@ void loop()
 }
 
 
-int rholdoff = 0;
-int fholdoff = 0;
-int lholdoff = 0;
-
 void sensorLoop()
 {
     const float drlast = rightSensor.getDistance();
