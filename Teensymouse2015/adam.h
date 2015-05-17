@@ -18,6 +18,7 @@ public:
     Direction operator--(int);
     bool operator==(const Direction& other) const;
     bool operator!=(const Direction& other) const;
+    operator int() const {return dir; } 
 
 private:
     Direction(int dir) : dir(dir) {}

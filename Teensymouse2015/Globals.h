@@ -18,7 +18,7 @@ const float wheelBase = 0.082f;
 const float pi = 3.14159265f;
 const float cellw = 0.18f;
 const float wallw = 0.012f;
-const float sensw = 0.01f;
+const float sensw = 0.012f;
 const float fsensoff = 0.01f;
 
 const int mazem = 16;

@@ -22,35 +22,31 @@ void stop()
   
 void forward()
 {   //tweakable values
-    const float threshold = 0.1f;
+    const float threshold = 0.14f;
     const float sideOffset = (cellw - sensw)/2.f;
     const float frontOffset = cellw/2.f - fsensoff;
     const int drivetime = 2500;
     const int lastTime = millis();
 
-    const float kpDist = 0.5f;
-    const float kpTheta = 10.f;
+    const float kp = 2.f;
+    const float kd = 3.f;
     const float maxControl = 0.1f;
 
-    const float rdist = rightSensor.getDistance();
-    const float ldist = leftSensor.getDistance();
-    const float fdist = frontSensor.getDistance();
-    
+    float rdist, ldist, fdist;
+
     while (millis() - lastTime < drivetime)
     {
+        rdist = rightSensor.getDistance();
+        ldist = leftSensor.getDistance();
+        fdist = frontSensor.getDistance();
+
         float control = 0.f;
-        
+
         if (rdist < threshold)
-        {
-            control += kpDist * -(rdist - sideOffset);
-            control += kpTheta * -drdt;
-        }
+            control -= kp * (rdist - sideOffset) + kd * drdt;
 
         if (ldist < threshold)
-        {
-            control += kpDist * (ldist - sideOffset);
-            control += kpTheta * dldt;
-        }
+            control += kp * (ldist - sideOffset) + kd * dldt;
 
         if (control > maxControl)
             control = maxControl;
@@ -58,9 +54,47 @@ void forward()
         if (control < -maxControl)
             control = -maxControl;
 
-        rightMotor = 0.8f + control;
-        leftMotor = 0.75f - control;
+        if (millis() - lastTime > 700 && millis() - lastTime < 1600)
+            control = 0.f;
+
+        rightMotor = 0.9f + control;
+        leftMotor = 0.865f - control;
     }
+/*   fdist = frontSensor.getDistance();
+
+    while(fdist<0.1 &&(fdist < frontOffset-.01f|| fdist > frontOffset +.01f))
+    {
+        rdist = rightSensor.getDistance();
+        ldist = leftSensor.getDistance();
+        fdist = frontSensor.getDistance();
+        
+        float control = 0.f;
+        if (fdist > frontOffset-.01)
+        {
+            if (rdist < threshold)
+                control -= kp * (rdist - sideOffset) + kd * drdt;
+
+            if (ldist < threshold)
+                control += kp * (ldist - sideOffset) + kd * dldt;
+        }
+        else
+        {
+            if (rdist < threshold)
+                control += kp * (rdist - sideOffset) + kd * drdt;
+
+            if (ldist < threshold)
+                control -= kp * (ldist - sideOffset) + kd * dldt;
+        }
+        if (control > maxControl)
+            control = maxControl;
+        
+        if (control < -maxControl)
+            control = -maxControl;
+           
+        rightMotor = 0.9f + control;
+        leftMotor = 0.87f - control;
+        
+        }*/
 }
 
 
@@ -77,14 +111,14 @@ Movement pos2move(Gps position, Node target)
     else if (Direction::ipos == position.heading)
     {
         const int temp = i;
-        i = j;
-        j = -temp;
+        i = -j;
+        j = temp;
     }
     else if (Direction::ineg == position.heading)
     {
         const int temp = i;
-        i = -j;
-        j = temp;
+        i = j;
+        j = -temp;
     }
     
     switch (j)
@@ -114,12 +148,11 @@ Movement pos2move(Gps position, Node target)
 
 void updateMaze(Gps position)
 {
-    bool l = leftSensor.getDistance() < 0.15f;
-    bool r = rightSensor.getDistance() < 0.15f;
-    bool f = frontSensor.getDistance() < 0.15f;
+    bool l = leftSensor.getDistance() < 0.13f;
+    bool r = rightSensor.getDistance() < 0.13f;
+    bool f = frontSensor.getDistance() < 0.13f;
     bool b = false;
     bool temp;
-
     Direction dir = position.heading;
     while (dir != Direction::jpos)
     {
@@ -145,11 +178,12 @@ Gps drive2cell(Gps position, Node target)
         forward();
         stop();
         position.current = target;
+        updateMaze(position);
         break;
     case Movement::backward:
         rightMotor = 1.f;
         leftMotor = -0.95f;
-        delay(750);
+        delay(580);
         ++(++position.heading);
         stop();
         drive2cell(position, target);
@@ -158,7 +192,7 @@ Gps drive2cell(Gps position, Node target)
         rightMotor = 1.f;
         leftMotor = -0.95f;
         delay(300);
-        --position.heading;
+        ++position.heading;
         stop();
         drive2cell(position, target);
         break;
@@ -166,7 +200,7 @@ Gps drive2cell(Gps position, Node target)
         rightMotor = -1.f;
         leftMotor = 0.95f;
         delay(300);
-        ++position.heading;
+        --position.heading;
         stop();
         drive2cell(position, target);
         break;

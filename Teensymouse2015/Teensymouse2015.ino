@@ -7,6 +7,7 @@
 #include "BitArray2D.h"
 #include <cmath>
 #include "adam.h"
+#include <stdio.h>
 
 
 BitArray2D<16, 16> goals;
@@ -22,6 +23,8 @@ Gps position = {{0, 0}, Direction::jpos};
 void setup()
 {
     asm(".global _printf_float");
+
+    Serial.begin(115200);
     
     pinMode(ledPin, OUTPUT);
 
@@ -39,7 +42,13 @@ void setup()
 
     maze.setCellWalls(0, 0, {true, false, true, true});
 
-    delay(7000);
+    for (int sumdumbcount = 0; sumdumbcount < 7; ++sumdumbcount)
+    {
+        led(1);
+        delay(500);
+        led(0);
+        delay(500);
+    }
     
     rightMotor = 0.f;
     leftMotor = 0.f;
@@ -61,6 +70,10 @@ void loop()
         {
             bfsPath.pop();
             position = drive2cell(position, bfsPath.pop());
+
+            char buf[32];
+            snprintf(buf, 32, "%d, %d, %d\r\n", position.current.i, position.current.j, int(position.heading));
+            Serial.write(buf);
         }
     }
     
@@ -96,9 +109,9 @@ void sensorLoop()
     leftSensor.poll();
 
     // Calculate raw sensor derivatives
-    const float drdtnew = (rightSensor.getDistance() - drlast) / dtsensor;
-    const float dfdtnew = (frontSensor.getDistance() - dflast) / dtsensor;
-    const float dldtnew = (leftSensor.getDistance() - dllast) / dtsensor;
+    float drdtnew = (rightSensor.getDistance() - drlast) / dtsensor;
+    float dfdtnew = (frontSensor.getDistance() - dflast) / dtsensor;
+    float dldtnew = (leftSensor.getDistance() - dllast) / dtsensor;
 
     // If the raw derivative is high, don't add it to the filter for a while
     const float threshold = 0.5f;
@@ -111,17 +124,25 @@ void sensorLoop()
         lholdoff = holdoffSteps;
 
     if (rholdoff > 0)
+    {
         --rholdoff;
-    else
-        drdt.push(drdtnew);
+        drdtnew = 0.f;
+    }
 
     if (fholdoff > 0)
+    {
         --fholdoff;
-    else
-        dfdt.push(dfdtnew);
+        dfdtnew = 0.f;
+    }
 
     if (lholdoff > 0)
+    {
         --lholdoff;
-    else
-        dldt.push(dldtnew);
+        dldtnew = 0.f;
+    }
+
+    
+    drdt.push(drdtnew);
+    dfdt.push(dfdtnew);
+    dldt.push(dldtnew);
 }
